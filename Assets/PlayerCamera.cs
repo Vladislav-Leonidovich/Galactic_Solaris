@@ -16,6 +16,8 @@ public class PlayerCamera : MonoBehaviour
     [SerializeField] private bool canSprint = true;
     [SerializeField] private bool canJump = true;
     [SerializeField] private bool canCrouch = true;
+    [SerializeField] private bool canUseHeadbob = true;
+    [SerializeField] private bool willSlideOnSlopes = true;
 
     [Header("Controls")]
     [SerializeField] private KeyCode sprintKey = KeyCode.LeftShift;
@@ -26,6 +28,7 @@ public class PlayerCamera : MonoBehaviour
     [SerializeField] private float walkSpeed = 3.0f;
     [SerializeField] private float sprintSpeed = 6.0f;
     [SerializeField] private float crouchSpeed = 1.5f;
+    [SerializeField] private float slopeSpeed = 8f;
 
     [Header("Look Parameters")]
     [SerializeField, Range(1, 10)] private float lookSpeedX = 2.0f;
@@ -46,14 +49,34 @@ public class PlayerCamera : MonoBehaviour
     private bool isCrouching;
     private bool duringCrouchAnimation;
 
-    // Crouch height
-    // Stand height
-    // Is crouching
-    // Is in crouch animation
-    // Time to crouch/stand
-    // Standing center point
-    // Crouching center point
+    [Header("Headbob Parameters")]
+    [SerializeField] private float walkBobSpeed = 14f;
+    [SerializeField] private float walkBobAmount = 0.03f;
+    [SerializeField] private float sprintBobSpeed = 18f;
+    [SerializeField] private float sprintBobAmount = 0.05f;
+    [SerializeField] private float crouchBobSpeed = 8f;
+    [SerializeField] private float crouchBobAmount = 0.025f;
+    private float defaultYPos = 0;
+    private float timer;
 
+    //SLIDING PARAMETERS
+
+    private Vector3 hitPointNormal;
+    private bool isSliding
+    {
+        get
+        {
+            if(characterController.isGrounded && Physics.Raycast(transform.position, Vector3.down, out RaycastHit slopeHit, 2f))
+            {
+                hitPointNormal = slopeHit.normal;
+                return Vector3.Angle(hitPointNormal, Vector3.up) < characterController.slopeLimit;
+            }
+            else
+            {
+                return false;
+            }
+        }
+    }
 
     private Camera playerCamera;
     private CharacterController characterController;
@@ -67,6 +90,7 @@ public class PlayerCamera : MonoBehaviour
     {
         playerCamera = GetComponentInChildren<Camera>();
         characterController = GetComponent<CharacterController>();
+        defaultYPos = playerCamera.transform.localPosition.y;
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
@@ -86,6 +110,10 @@ public class PlayerCamera : MonoBehaviour
             if(canCrouch)
             {
                 HandleCrouch();
+            }
+            if(canUseHeadbob)
+            {
+                HandleHeadbob();
             }
 
             ApplyFinalMovement();
@@ -123,11 +151,29 @@ public class PlayerCamera : MonoBehaviour
             StartCoroutine(CrouchStand());
         }
     }
+
+    private void HandleHeadbob()
+    {
+        if(!characterController.isGrounded) { return; }
+
+        if(Mathf.Abs(moveDirection.x) > 0.1f || Mathf.Abs(moveDirection.z) > 0.1f)
+        {
+            timer += Time.deltaTime * (isCrouching ? crouchBobSpeed : IsSprinting ? sprintBobSpeed : walkBobSpeed);
+            playerCamera.transform.localPosition = new Vector3(
+                playerCamera.transform.localPosition.x,
+                defaultYPos + Mathf.Sin(timer) * (isCrouching ? crouchBobAmount : IsSprinting ? sprintBobAmount : walkBobAmount),
+                playerCamera.transform.localPosition.z);
+        }
+    }
     private void ApplyFinalMovement()
     {
         if(!characterController.isGrounded)
         {
             moveDirection.y -= gravity * Time.deltaTime;
+        }
+        if(willSlideOnSlopes && isSliding)
+        {
+            moveDirection = new Vector3(hitPointNormal.x, -hitPointNormal.y, hitPointNormal.z) * slopeSpeed;
         }
         characterController.Move(moveDirection * Time.deltaTime);
     }
