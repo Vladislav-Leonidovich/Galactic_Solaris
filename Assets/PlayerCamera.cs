@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Xml.Serialization;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 
 public class PlayerCamera : MonoBehaviour
@@ -18,11 +19,13 @@ public class PlayerCamera : MonoBehaviour
     [SerializeField] private bool canCrouch = true;
     [SerializeField] private bool canUseHeadbob = true;
     [SerializeField] private bool willSlideOnSlopes = true;
+    [SerializeField] private bool canZoom = true;
 
     [Header("Controls")]
     [SerializeField] private KeyCode sprintKey = KeyCode.LeftShift;
     [SerializeField] private KeyCode jumpKey = KeyCode.Space;
     [SerializeField] private KeyCode crouchKey = KeyCode.LeftControl;
+    [SerializeField] private KeyCode zoomKey = KeyCode.Mouse1;
 
     [Header("Movement Parameters")]
     [SerializeField] private float walkSpeed = 3.0f;
@@ -59,6 +62,12 @@ public class PlayerCamera : MonoBehaviour
     private float defaultYPos = 0;
     private float timer;
 
+    [Header("Zoom Parameters")]
+    [SerializeField] private float timeToZoom = 0.3f;
+    [SerializeField] private float zoomFOV = 30f;
+    private float defaultFOV;
+    private Coroutine zoomRoutine;
+
     //SLIDING PARAMETERS
 
     private Vector3 hitPointNormal;
@@ -69,7 +78,7 @@ public class PlayerCamera : MonoBehaviour
             if(characterController.isGrounded && Physics.Raycast(transform.position, Vector3.down, out RaycastHit slopeHit, 2f))
             {
                 hitPointNormal = slopeHit.normal;
-                return Vector3.Angle(hitPointNormal, Vector3.up) < characterController.slopeLimit;
+                return Vector3.Angle(hitPointNormal, Vector3.up) > characterController.slopeLimit;
             }
             else
             {
@@ -91,6 +100,7 @@ public class PlayerCamera : MonoBehaviour
         playerCamera = GetComponentInChildren<Camera>();
         characterController = GetComponent<CharacterController>();
         defaultYPos = playerCamera.transform.localPosition.y;
+        defaultFOV = playerCamera.fieldOfView;
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
@@ -114,6 +124,10 @@ public class PlayerCamera : MonoBehaviour
             if(canUseHeadbob)
             {
                 HandleHeadbob();
+            }
+            if(canZoom)
+            {
+                HandleZoom();
             }
 
             ApplyFinalMovement();
@@ -165,16 +179,46 @@ public class PlayerCamera : MonoBehaviour
                 playerCamera.transform.localPosition.z);
         }
     }
+
+    private void HandleZoom()
+    {
+        if(Input.GetKeyDown(zoomKey)) 
+        {
+            if(zoomRoutine != null)
+            {
+                StopCoroutine(zoomRoutine);
+                zoomRoutine = null;
+            }
+
+            zoomRoutine = StartCoroutine(ToggleZoom(true));
+        }
+        if (Input.GetKeyUp(zoomKey))
+        {
+            if (zoomRoutine != null)
+            {
+                StopCoroutine(zoomRoutine);
+                zoomRoutine = null;
+            }
+
+            zoomRoutine = StartCoroutine(ToggleZoom(false));
+        }
+    }
+
     private void ApplyFinalMovement()
     {
         if(!characterController.isGrounded)
         {
             moveDirection.y -= gravity * Time.deltaTime;
         }
-        if(willSlideOnSlopes && isSliding)
+        if (willSlideOnSlopes && isSliding)
         {
-            moveDirection = new Vector3(hitPointNormal.x, -hitPointNormal.y, hitPointNormal.z) * slopeSpeed;
+            //canSprint = false; My solution on how to avoid bugs like jumping and sprinting on a sliding surface. Causes a bug that turns off jumping and sprinting.
+            //canJump = false; My solution on how to avoid bugs like jumping and sprinting on a sliding surface. Causes a bug that turns off jumping and sprinting.
+            moveDirection += new Vector3(hitPointNormal.x, -hitPointNormal.y, hitPointNormal.z) * slopeSpeed;
         }
+        /*if (characterController.velocity.y < -1 && characterController.isGrounded) I don't quite understand how this thing works..
+            moveDirection.y = 0;*/
+
         characterController.Move(moveDirection * Time.deltaTime);
     }
 
@@ -206,5 +250,22 @@ public class PlayerCamera : MonoBehaviour
         isCrouching = !isCrouching;
 
         duringCrouchAnimation = false;
+    }
+
+    private IEnumerator ToggleZoom(bool isEnter) 
+    {
+        float targetFOV = isEnter ? zoomFOV : defaultFOV;
+        float startingFOV = playerCamera.fieldOfView;
+        float timeElapsed = 0;
+
+        while(timeElapsed < timeToZoom)
+        {
+            playerCamera.fieldOfView = Mathf.Lerp(startingFOV, targetFOV, timeElapsed / timeToZoom);
+            timeElapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        playerCamera.fieldOfView = targetFOV;
+        zoomRoutine = null;
     }
 }
