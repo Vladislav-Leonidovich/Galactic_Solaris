@@ -218,10 +218,10 @@ public class PlayerCamera : MonoBehaviour
         }
         else
         {
-            canSprint = true;
-            canJump = true;
+            canSprint = true; // Solution how to fix the bug that is mentioned in the comment on line 215, 216
+            canJump = true; // Solution how to fix the bug that is mentioned in the comment on line 215, 216
         }
-        /*if (characterController.velocity.y < -1 && characterController.isGrounded) I don't quite understand how this thing works..
+        /*if (characterController.velocity.y < -1 && characterController.isGrounded) I don't quite understand how this thing works.. But it's supposed to fix the sliding bug.
             moveDirection.y = 0;*/
 
         characterController.Move(moveDirection * Time.deltaTime);
