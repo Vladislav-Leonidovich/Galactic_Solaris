@@ -9,7 +9,7 @@ using UnityEngine.EventSystems;
 public class PlayerCamera : MonoBehaviour
 {
     public bool CanMove { get; private set; } = true;
-    private bool IsSprinting => canSprint && Input.GetKey(sprintKey);
+    private bool IsSprinting => canSprint && Input.GetKey(sprintKey); // Не зовсім розумію що робить знак =>
     private bool ShouldJump => Input.GetKeyDown(jumpKey) && characterController.isGrounded;
     private bool ShouldCrouch => Input.GetKeyDown(crouchKey) && !duringCrouchAnimation && characterController.isGrounded;
 
@@ -66,19 +66,19 @@ public class PlayerCamera : MonoBehaviour
     [SerializeField] private float timeToZoom = 0.3f;
     [SerializeField] private float zoomFOV = 30f;
     private float defaultFOV;
-    private Coroutine zoomRoutine;
+    private Coroutine zoomRoutine; // Не розумію що таке Coroutine, та де в цілому послідовно вивчати класи та методи які надає Unity
 
     //SLIDING PARAMETERS
 
-    private Vector3 hitPointNormal;
+    private Vector3 hitPointNormal; // Не розумію як саме діє цей вектор, по ідеї бере участь в обчисленні куту нахилу в моєму розумінні
     private bool isSliding
     {
         get
         {
-            if(characterController.isGrounded && Physics.Raycast(transform.position, Vector3.down, out RaycastHit slopeHit, 2f))
+            if(characterController.isGrounded && Physics.Raycast(transform.position, Vector3.down, out RaycastHit slopeHit, 2f)) //Взагалі не розумію що відбувається в умові, через те що не знаю як діє клас Physics та його методи (В даному випадку Raycast)
             {
-                hitPointNormal = slopeHit.normal;
-                return Vector3.Angle(hitPointNormal, Vector3.up) > characterController.slopeLimit;
+                hitPointNormal = slopeHit.normal; //Та ж проблема що й строкою вище
+                return Vector3.Angle(hitPointNormal, Vector3.up) > characterController.slopeLimit; //Також не розумію як відбуваються обчислення
             }
             else
             {
@@ -93,7 +93,7 @@ public class PlayerCamera : MonoBehaviour
     private Vector3 moveDirection;
     private Vector2 currentInput;
 
-    private float rotationX = 0;
+    private float rotationX = 0; // Надалі не буду розуміти як обчислюється рух та обертання камери в цілому
     // Start is called before the first frame update
     void Awake()
     {
@@ -136,18 +136,18 @@ public class PlayerCamera : MonoBehaviour
 
     private void HandleMovementInput()
     {
-        currentInput = new Vector2((isCrouching ? crouchSpeed : IsSprinting ? sprintSpeed : walkSpeed) * Input.GetAxis("Vertical"), (isCrouching ? crouchSpeed : IsSprinting ? sprintSpeed : walkSpeed) * Input.GetAxis("Horizontal")); ;
-        float moveDirectionY = moveDirection.y;
-        moveDirection = (transform.TransformDirection(Vector3.forward) * currentInput.x) + (transform.TransformDirection(Vector3.right) * currentInput.y);
-        moveDirection.y = moveDirectionY;
+        currentInput = new Vector2((isCrouching ? crouchSpeed : IsSprinting ? sprintSpeed : walkSpeed) * Input.GetAxis("Vertical"), (isCrouching ? crouchSpeed : IsSprinting ? sprintSpeed : walkSpeed) * Input.GetAxis("Horizontal")); // Взагалі не розумію
+        float moveDirectionY = moveDirection.y; // Взагалі не розумію
+        moveDirection = (transform.TransformDirection(Vector3.forward) * currentInput.x) + (transform.TransformDirection(Vector3.right) * currentInput.y); // Взагалі не розумію
+        moveDirection.y = moveDirectionY; // Взагалі не розумію
     }
 
     private void HandleMouseLook()
     {
-        rotationX -= Input.GetAxis("Mouse Y") * lookSpeedY;
-        rotationX = Mathf.Clamp(rotationX, -upperLookLimit, lowerLookLimit);
-        playerCamera.transform.localRotation = Quaternion.Euler(rotationX, 0, 0);
-        transform.rotation *= Quaternion.Euler(0, Input.GetAxis("Mouse X") * lookSpeedX, 0);
+        rotationX -= Input.GetAxis("Mouse Y") * lookSpeedY; // Трохи не зрозуміло як відбуваються обчислення
+        rotationX = Mathf.Clamp(rotationX, -upperLookLimit, lowerLookLimit); // Обмеження повороту камери
+        playerCamera.transform.localRotation = Quaternion.Euler(rotationX, 0, 0); // Взагалі не розумію
+        transform.rotation *= Quaternion.Euler(0, Input.GetAxis("Mouse X") * lookSpeedX, 0); // Взагалі не розумію
     }
 
     private void HandleJump() 
@@ -162,7 +162,7 @@ public class PlayerCamera : MonoBehaviour
     {
         if(ShouldCrouch)
         {
-            StartCoroutine(CrouchStand());
+            StartCoroutine(CrouchStand()); // Взагалі не розумію
         }
     }
 
@@ -170,7 +170,7 @@ public class PlayerCamera : MonoBehaviour
     {
         if(!characterController.isGrounded) { return; }
 
-        if(Mathf.Abs(moveDirection.x) > 0.1f || Mathf.Abs(moveDirection.z) > 0.1f)
+        if(Mathf.Abs(moveDirection.x) > 0.1f || Mathf.Abs(moveDirection.z) > 0.1f) // Взагалі не розумію
         {
             timer += Time.deltaTime * (isCrouching ? crouchBobSpeed : IsSprinting ? sprintBobSpeed : walkBobSpeed);
             playerCamera.transform.localPosition = new Vector3(
@@ -186,11 +186,11 @@ public class PlayerCamera : MonoBehaviour
         {
             if(zoomRoutine != null)
             {
-                StopCoroutine(zoomRoutine);
+                StopCoroutine(zoomRoutine); // Взагалі не розумію
                 zoomRoutine = null;
             }
 
-            zoomRoutine = StartCoroutine(ToggleZoom(true));
+            zoomRoutine = StartCoroutine(ToggleZoom(true)); // Взагалі не розумію
         }
         if (Input.GetKeyUp(zoomKey))
         {
@@ -227,9 +227,9 @@ public class PlayerCamera : MonoBehaviour
         characterController.Move(moveDirection * Time.deltaTime);
     }
 
-    private IEnumerator CrouchStand()
+    private IEnumerator CrouchStand() // Взагалі не розумію
     {
-        if(isCrouching && Physics.Raycast(playerCamera.transform.position, Vector3.up, 1f))
+        if(isCrouching && Physics.Raycast(playerCamera.transform.position, Vector3.up, 1f)) // Взагалі не розумію
         {
             yield break;
         }
@@ -243,9 +243,9 @@ public class PlayerCamera : MonoBehaviour
 
         while (timeElapsed < timeToCrouch)
         {
-            characterController.height = Mathf.Lerp(currentHeight, targetHeight, timeElapsed/timeToCrouch);
-            characterController.center = Vector3.Lerp(currentCenter, targetCenter, timeElapsed/timeToCrouch);
-            timeElapsed += Time.deltaTime;
+            characterController.height = Mathf.Lerp(currentHeight, targetHeight, timeElapsed/timeToCrouch); // Взагалі не розумію
+            characterController.center = Vector3.Lerp(currentCenter, targetCenter, timeElapsed/timeToCrouch); // Взагалі не розумію
+            timeElapsed += Time.deltaTime; // Взагалі не розумію
             yield return null;
         }
 
@@ -257,16 +257,16 @@ public class PlayerCamera : MonoBehaviour
         duringCrouchAnimation = false;
     }
 
-    private IEnumerator ToggleZoom(bool isEnter) 
+    private IEnumerator ToggleZoom(bool isEnter) // Взагалі не розумію
     {
-        float targetFOV = isEnter ? zoomFOV : defaultFOV;
+        float targetFOV = isEnter ? zoomFOV : defaultFOV; // Взагалі не розумію
         float startingFOV = playerCamera.fieldOfView;
         float timeElapsed = 0;
 
         while(timeElapsed < timeToZoom)
         {
-            playerCamera.fieldOfView = Mathf.Lerp(startingFOV, targetFOV, timeElapsed / timeToZoom);
-            timeElapsed += Time.deltaTime;
+            playerCamera.fieldOfView = Mathf.Lerp(startingFOV, targetFOV, timeElapsed / timeToZoom); // Взагалі не розумію
+            timeElapsed += Time.deltaTime; // Взагалі не розумію
             yield return null;
         }
 
