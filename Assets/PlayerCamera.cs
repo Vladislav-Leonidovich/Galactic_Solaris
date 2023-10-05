@@ -212,9 +212,14 @@ public class PlayerCamera : MonoBehaviour
         }
         if (willSlideOnSlopes && isSliding)
         {
-            //canSprint = false; My solution on how to avoid bugs like jumping and sprinting on a sliding surface. Causes a bug that turns off jumping and sprinting.
-            //canJump = false; My solution on how to avoid bugs like jumping and sprinting on a sliding surface. Causes a bug that turns off jumping and sprinting.
+            canSprint = false; //My solution on how to avoid bugs like jumping and sprinting on a sliding surface. Causes a bug that turns off jumping and sprinting.
+            canJump = false; //My solution on how to avoid bugs like jumping and sprinting on a sliding surface. Causes a bug that turns off jumping and sprinting.
             moveDirection += new Vector3(hitPointNormal.x, -hitPointNormal.y, hitPointNormal.z) * slopeSpeed;
+        }
+        else
+        {
+            canSprint = true;
+            canJump = true;
         }
         /*if (characterController.velocity.y < -1 && characterController.isGrounded) I don't quite understand how this thing works..
             moveDirection.y = 0;*/

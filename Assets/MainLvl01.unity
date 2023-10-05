@@ -683,9 +683,11 @@ MonoBehaviour:
   canCrouch: 1
   canUseHeadbob: 1
   willSlideOnSlopes: 1
+  canZoom: 1
   sprintKey: 304
   jumpKey: 32
   crouchKey: 306
+  zoomKey: 324
   walkSpeed: 3
   sprintSpeed: 6
   crouchSpeed: 1.5
@@ -707,6 +709,8 @@ MonoBehaviour:
   sprintBobAmount: 0.05
   crouchBobSpeed: 8
   crouchBobAmount: 0.025
+  timeToZoom: 0.3
+  zoomFOV: 30
 --- !u!143 &1134616545
 CharacterController:
   m_ObjectHideFlags: 0
@@ -1057,13 +1061,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1311142416}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.41172597, y: -0, z: -0, w: 0.91130775}
+  m_LocalRotation: {x: 0.42348805, y: 0, z: 0, w: 0.90590173}
   m_LocalPosition: {x: 3.74, y: 1.49, z: -1.8}
   m_LocalScale: {x: 6, y: 0.3, z: 5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 48.627, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 50.11, y: 0, z: 0}
 --- !u!1 &1361123698
 GameObject:
   m_ObjectHideFlags: 0
